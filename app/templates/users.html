@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Users</h1>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Accounts</h2>
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Username</th><th>Email</th><th>2FA</th><th>Last login</th><th></th></tr></thead>
+        <tbody>{% for u in users %}
+          <tr>
+            <td>{{ u.username }}{% if u.id == current_user.id %} <span class="badge text-bg-secondary">you</span>{% endif %}</td>
+            <td>{{ u.email }}</td>
+            <td>{% if u.totp_enabled %}<span class="text-success">on</span>{% else %}<span class="text-warning">not yet</span>{% endif %}</td>
+            <td class="text-nowrap">{{ u.last_login|localtime if u.last_login else "never" }}</td>
+            <td class="text-end">{% if u.id != current_user.id %}<a class="btn btn-sm btn-outline-danger" href="{{ url_for('auth.delete_user', user_id=u.id) }}"><i class="bi bi-trash me-1"></i>Delete</a>{% endif %}</td>
+          </tr>
+        {% endfor %}</tbody></table></div>
+    </div></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Create an account</h2>
+      <p class="small text-secondary">Every account has the same rights. The new user sets up their authenticator app and gets their recovery codes at the first login.</p>
+      {% if errors %}<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+      <form method="post" autocomplete="off" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3"><label class="form-label" for="username">Username</label>
+          <input class="form-control" id="username" name="username" value="{{ form.username }}" required></div>
+        <div class="mb-3"><label class="form-label" for="email">Email</label>
+          <input class="form-control" id="email" name="email" type="email" value="{{ form.email }}" required></div>
+        <div class="mb-3"><label class="form-label" for="password">Password</label>
+          <input class="form-control" id="password" name="password" type="password" autocomplete="new-password" required>
+          <div class="form-text">At least {{ min_len }} characters, with letters and a number. The user can change it later.</div></div>
+        <div class="mb-3"><label class="form-label" for="confirm">Confirm password</label>
+          <input class="form-control" id="confirm" name="confirm" type="password" autocomplete="new-password" required></div>
+        <button class="btn btn-primary">Create account</button>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

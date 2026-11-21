@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Lab IDS{% endblock %} - Lab IDS</title>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<div class="app-shell">
+  <nav class="sidebar d-flex flex-column p-3">
+    <a href="{{ url_for('main.dashboard') }}" class="d-flex align-items-center gap-2 text-decoration-none mb-4 px-2">
+      <i class="bi bi-shield-check brand-icon"></i><span class="fs-5 fw-semibold text-body">Lab IDS</span>
+    </a>
+    <ul class="nav nav-pills flex-column gap-1 mb-auto">
+      {% set ep = request.endpoint %}
+      <li><a class="nav-link {{ 'active' if ep == 'main.dashboard' }}" href="{{ url_for('main.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+      <li><a class="nav-link {{ 'active' if ep in ('main.alerts','main.alert_detail') }}" href="{{ url_for('main.alerts') }}"><i class="bi bi-exclamation-triangle me-2"></i>Alerts</a></li>
+      <li><a class="nav-link {{ 'active' if ep == 'main.devices' }}" href="{{ url_for('main.devices') }}"><i class="bi bi-pc-display me-2"></i>Devices</a></li>
+      <li><a class="nav-link {{ 'active' if ep == 'main.network_map' }}" href="{{ url_for('main.network_map') }}"><i class="bi bi-diagram-3 me-2"></i>Network map</a></li>
+      <li><a class="nav-link {{ 'active' if ep in ('main.settings','main.wizard') }}" href="{{ url_for('main.settings') }}"><i class="bi bi-sliders me-2"></i>Settings</a></li>
+      <li><a class="nav-link {{ 'active' if ep in ('auth.users','auth.delete_user') }}" href="{{ url_for('auth.users') }}"><i class="bi bi-people me-2"></i>Users</a></li>
+      <li><a class="nav-link {{ 'active' if ep == 'auth.account' }}" href="{{ url_for('auth.account') }}"><i class="bi bi-person-lock me-2"></i>Account</a></li>
+    </ul>
+    <div class="d-flex gap-2 pt-3 border-top">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-toggle aria-label="Toggle light/dark theme"><i class="bi bi-circle-half"></i></button>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="flex-grow-1">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-outline-secondary w-100"><i class="bi bi-box-arrow-right me-1"></i>Log out</button>
+      </form>
+    </div>
+  </nav>
+  <main class="content p-3 p-lg-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show py-2" role="alert">{{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

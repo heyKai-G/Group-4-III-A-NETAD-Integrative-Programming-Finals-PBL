@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Alert {{ alert.id }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('main.alerts') }}" class="small"><i class="bi bi-arrow-left"></i> All alerts</a>
+<h1 class="h4 mt-2">{{ alert.signature }}</h1>
+<div class="row g-3 mb-3">
+  <div class="col-md-6"><div class="card"><div class="card-body"><dl class="row mb-0">
+    <dt class="col-4">Time</dt><dd class="col-8">{{ alert.ts|localtime }}</dd>
+    <dt class="col-4">Severity</dt><dd class="col-8"><span class="badge sev-{{ alert.severity_label }}">{{ alert.severity_label }}</span></dd>
+    <dt class="col-4">Category</dt><dd class="col-8">{{ alert.category }}</dd>
+    <dt class="col-4">Detected by</dt><dd class="col-8">{{ alert.source }}{% if alert.sid %} (SID {{ alert.sid }}){% endif %}</dd>
+    <dt class="col-4">Acknowledged</dt><dd class="col-8">{{ 'yes' if alert.acknowledged else 'no' }}</dd>
+  </dl></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><dl class="row mb-0">
+    <dt class="col-4">Source</dt><dd class="col-8">{{ alert.src_ip or '-' }}{% if alert.src_port %}:{{ alert.src_port }}{% endif %}</dd>
+    <dt class="col-4">Destination</dt><dd class="col-8">{{ alert.dest_ip or '-' }}{% if alert.dest_port %}:{{ alert.dest_port }}{% endif %}</dd>
+    <dt class="col-4">Protocol</dt><dd class="col-8">{{ alert.proto or '-' }}</dd>
+  </dl></div></div></div>
+</div>
+{% if not alert.acknowledged %}
+<form method="post" action="{{ url_for('main.ack', alert_id=alert.id) }}" class="mb-3">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-check2 me-1"></i>Acknowledge</button></form>
+{% endif %}
+<div class="card"><div class="card-body"><h2 class="h6">Raw event</h2><pre class="mb-0 raw"><code>{{ raw }}</code></pre></div></div>
+{% endblock %}

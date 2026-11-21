@@ -1,0 +1,15 @@
+{% extends "base_auth.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Log in</h1>
+{% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+<form method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3"><label class="form-label" for="username">Username</label>
+    <input class="form-control" id="username" name="username" autocomplete="username" required autofocus></div>
+  <div class="mb-4"><label class="form-label" for="password">Password</label>
+    <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required></div>
+  <button class="btn btn-primary w-100">Continue</button>
+  <a class="d-block text-center mt-3 small" href="{{ url_for('auth.forgot') }}">Forgot password?</a>
+</form>
+{% endblock %}

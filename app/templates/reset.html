@@ -1,0 +1,16 @@
+{% extends "base_auth.html" %}
+{% block title %}Choose a new password{% endblock %}
+{% block content %}
+<h1 class="h4 mb-1">Choose a new password</h1>
+<p class="text-secondary small">For account <strong>{{ username }}</strong>.</p>
+{% if errors %}<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+<form method="post" novalidate autocomplete="off">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3"><label class="form-label" for="new">New password</label>
+    <input class="form-control" id="new" name="new" type="password" autocomplete="new-password" required autofocus>
+    <div class="form-text">At least {{ min_len }} characters, with letters and a number.</div></div>
+  <div class="mb-4"><label class="form-label" for="confirm">Confirm new password</label>
+    <input class="form-control" id="confirm" name="confirm" type="password" autocomplete="new-password" required></div>
+  <button class="btn btn-primary w-100">Change password</button>
+</form>
+{% endblock %}

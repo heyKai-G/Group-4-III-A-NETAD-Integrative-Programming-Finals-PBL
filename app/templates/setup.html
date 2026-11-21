@@ -1,0 +1,20 @@
+{% extends "base_auth.html" %}
+{% block title %}Create first account{% endblock %}
+{% block content %}
+<h1 class="h4 mb-1">Create the first account</h1>
+<p class="text-secondary small">First-time setup. Public registration closes after this account is created; later accounts are added from the Users page by someone who is logged in.</p>
+{% if errors %}<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+<form method="post" autocomplete="off" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3"><label class="form-label" for="username">Username</label>
+    <input class="form-control" id="username" name="username" value="{{ form.username }}" required autofocus></div>
+  <div class="mb-3"><label class="form-label" for="email">Email</label>
+    <input class="form-control" id="email" name="email" type="email" value="{{ form.email }}" required></div>
+  <div class="mb-3"><label class="form-label" for="password">Password</label>
+    <input class="form-control" id="password" name="password" type="password" minlength="{{ min_len }}" required>
+    <div class="form-text">At least {{ min_len }} characters, with letters and a number.</div></div>
+  <div class="mb-4"><label class="form-label" for="confirm">Confirm password</label>
+    <input class="form-control" id="confirm" name="confirm" type="password" required></div>
+  <button class="btn btn-primary w-100">Create account and set up 2FA</button>
+</form>
+{% endblock %}

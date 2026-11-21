@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Recovery codes{% endblock %}
+{% block content %}
+<div class="row"><div class="col-lg-7 col-xl-6">
+<h1 class="h3 mb-3">{% if first_time %}Two-factor authentication is on{% else %}New recovery codes{% endif %}</h1>
+<div class="card"><div class="card-body">
+  <h2 class="h5">Save your recovery codes</h2>
+  <p class="text-secondary">If you forget your password, one of these codes lets you set a new one on the login page ("Forgot password?"). Each code works <strong>once</strong>. They are shown <strong>only now</strong>, so write them down or print them and keep them somewhere safe.</p>
+  <div class="row row-cols-2 g-2 mb-3">
+    {% for c in codes %}<div class="col"><code class="d-block text-center fs-5 py-2 border rounded user-select-all">{{ c }}</code></div>{% endfor %}
+  </div>
+  <button type="button" class="btn btn-outline-secondary me-2" data-print>Print</button>
+  <a class="btn btn-primary" href="{{ url_for('main.dashboard') }}">I saved them, continue</a>
+</div></div>
+</div></div>
+{% endblock %}

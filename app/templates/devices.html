@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Devices{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Devices</h1>
+<p class="text-secondary">Devices seen on the monitored adapter (learned from ARP, DHCP and traffic inside your subnet). Only devices whose traffic crosses the IDS laptop appear here.</p>
+<div class="card"><div class="table-responsive">
+  <table class="table table-hover align-middle mb-0">
+    <thead><tr><th>Status</th><th>IP address</th><th>MAC address</th><th>Hostname</th><th>First seen</th><th>Last seen</th><th class="text-end">Alerts as source (24 h)</th></tr></thead>
+    <tbody>
+    {% for d in devices %}
+      <tr>
+        <td>{% if d.last_seen >= active_cutoff %}<span class="badge text-bg-success">active</span>{% else %}<span class="badge text-bg-secondary">idle</span>{% endif %}
+            {% if d.is_gateway %}<span class="badge text-bg-info">gateway</span>{% endif %}</td>
+        <td>{{ d.ip or '-' }}</td><td><code>{{ d.mac }}</code></td><td>{{ d.hostname or '' }}</td>
+        <td class="text-nowrap">{{ d.first_seen|localtime }}</td><td class="text-nowrap">{{ d.last_seen|localtime }}</td>
+        <td class="text-end">{% set n = counts.get(d.ip, 0) %}{% if n %}<a href="{{ url_for('main.alerts', ip=d.ip) }}"><span class="badge text-bg-danger">{{ n }}</span></a>{% else %}0{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="text-center text-secondary py-4">No devices seen yet. Is the sensor running and monitoring the right adapter?</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

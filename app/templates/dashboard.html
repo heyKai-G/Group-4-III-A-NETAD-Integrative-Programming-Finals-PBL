@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Dashboard</h1>
+  <span class="text-secondary">{{ cfg.network_name if cfg }}{% if cfg %} - {{ cfg.subnet_cidr }}{% endif %}</span>
+  <div class="ms-auto d-flex gap-2" id="status-pills">
+    <span class="badge rounded-pill text-bg-secondary" id="pill-suricata">Suricata: ...</span>
+    <span class="badge rounded-pill text-bg-secondary" id="pill-sensor">Sensor: ...</span>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3"><div class="card stat"><div class="card-body"><div class="stat-label">Alerts (24 h)</div><div class="stat-value" id="s-total">-</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card stat"><div class="card-body"><div class="stat-label">Unacknowledged</div><div class="stat-value" id="s-open">-</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card stat stat-high"><div class="card-body"><div class="stat-label">High severity (24 h)</div><div class="stat-value" id="s-high">-</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card stat"><div class="card-body"><div class="stat-label">Active devices</div><div class="stat-value"><span id="s-dev">-</span> <span class="fs-6 text-secondary">of <span id="s-devtotal">-</span></span></div></div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-xl-8"><div class="card h-100"><div class="card-body">
+    <div class="d-flex align-items-center mb-2"><h2 class="h6 mb-0">Live traffic on the monitored adapter</h2>
+      <select class="form-select form-select-sm ms-auto w-auto" id="traffic-range" aria-label="Time range">
+        <option value="5">5 min</option><option value="10" selected>10 min</option><option value="30">30 min</option><option value="120">2 h</option></select></div>
+    <div class="chart-box"><canvas id="chart-traffic" aria-label="Traffic chart" role="img"></canvas></div>
+    <div class="small text-secondary mt-1">Kbit/s. "From lab" = received from the switch side, "To lab" = sent to the switch side.</div>
+  </div></div></div>
+  <div class="col-xl-4"><div class="card h-100"><div class="card-body">
+    <h2 class="h6">Alerts by category (24 h)</h2>
+    <div class="chart-box"><canvas id="chart-cat" aria-label="Alerts by category" role="img"></canvas></div>
+  </div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-5"><div class="card h-100"><div class="card-body">
+    <h2 class="h6">Alerts per hour (24 h)</h2>
+    <div class="chart-box chart-sm"><canvas id="chart-timeline" aria-label="Alerts per hour" role="img"></canvas></div>
+    <h2 class="h6 mt-3">Top sources</h2>
+    <ul class="list-unstyled mb-0" id="top-sources"><li class="text-secondary">No alerts yet.</li></ul>
+  </div></div></div>
+  <div class="col-xl-7"><div class="card h-100"><div class="card-body">
+    <div class="d-flex align-items-center mb-2"><h2 class="h6 mb-0">Live alert feed</h2>
+      <a class="ms-auto small" href="{{ url_for('main.alerts') }}">All alerts</a></div>
+    <div class="table-responsive feed-box"><table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Time</th><th>Sev</th><th>Category</th><th>Signature</th><th>Source &rarr; Dest</th></tr></thead>
+      <tbody id="feed"><tr><td colspan="5" class="text-secondary">Waiting for alerts...</td></tr></tbody></table></div>
+  </div></div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

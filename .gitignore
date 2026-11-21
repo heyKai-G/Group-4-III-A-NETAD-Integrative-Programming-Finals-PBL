@@ -1,0 +1,6 @@
+.env
+.venv/
+certs/
+__pycache__/
+*.pyc
+suricata/et-rules/

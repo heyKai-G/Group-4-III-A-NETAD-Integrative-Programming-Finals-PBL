@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Network map{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-3"><h1 class="h3 mb-0">Network map</h1>
+  <span class="ms-3 text-secondary">{{ cfg.network_name if cfg }}</span></div>
+<div class="card"><div class="card-body">
+  <div class="d-flex flex-wrap gap-3 small mb-2" id="map-legend">
+    <span><span class="dot dot-gw"></span> Gateway</span>
+    <span><span class="dot dot-ids"></span> IDS laptop</span>
+    <span><span class="dot dot-ok"></span> Active</span>
+    <span><span class="dot dot-idle"></span> Idle (10+ min)</span>
+    <span><span class="dot dot-bad"></span> Source of alerts (last hour)</span>
+    <span><span class="dot dot-target"></span> Target of alerts (last hour)</span>
+  </div>
+  <div id="map-wrap"><svg id="netmap" viewBox="0 0 900 560" role="img" aria-label="Network map"></svg></div>
+  <div id="map-info" class="small text-secondary mt-2">Hover over or tap a device for details.</div>
+</div></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/netmap.js') }}"></script>{% endblock %}

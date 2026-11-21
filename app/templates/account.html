@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Account{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Account</h1>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Change password</h2>
+      {% if errors %}<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+      <form method="post" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3"><label class="form-label" for="current">Current password</label>
+          <input class="form-control" id="current" name="current" type="password" autocomplete="current-password" required></div>
+        <div class="mb-3"><label class="form-label" for="new">New password</label>
+          <input class="form-control" id="new" name="new" type="password" autocomplete="new-password" required>
+          <div class="form-text">At least {{ min_len }} characters, with letters and a number.</div></div>
+        <div class="mb-3"><label class="form-label" for="confirm">Confirm new password</label>
+          <input class="form-control" id="confirm" name="confirm" type="password" autocomplete="new-password" required></div>
+        <button class="btn btn-primary">Change password</button>
+      </form>
+      <hr>
+      <p class="small text-secondary mb-0">Lost your authenticator app as well? Run <code>python manage.py reset-admin</code> on this laptop.</p>
+    </div></div>
+    <div class="card mt-4"><div class="card-body">
+      <h2 class="h5">Recovery codes</h2>
+      <p class="small text-secondary">One-time codes to reset a forgotten password from the login page. You have <strong>{{ codes_left }}</strong> unused code(s).</p>
+      <form method="post" action="{{ url_for('auth.new_recovery_codes') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3"><label class="form-label" for="rc-password">Password</label>
+          <input class="form-control" id="rc-password" name="password" type="password" autocomplete="current-password" required>
+          <div class="form-text">Making new codes cancels the old ones.</div></div>
+        <button class="btn btn-outline-primary">Make new recovery codes</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Recent security events</h2>
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Time</th><th>Event</th><th>User</th><th>IP</th></tr></thead>
+        <tbody>{% for e in events %}
+          <tr><td class="text-nowrap">{{ e.ts|localtime }}</td><td>{{ e.event }}{% if e.detail %} <span class="text-secondary">({{ e.detail }})</span>{% endif %}</td><td>{{ e.username }}</td><td>{{ e.ip }}</td></tr>
+        {% endfor %}</tbody></table></div>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

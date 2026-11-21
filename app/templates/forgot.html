@@ -1,0 +1,26 @@
+﻿{% extends "base_auth.html" %}
+{% block title %}Forgot password{% endblock %}
+{% block content %}
+<h1 class="h4 mb-1">Forgot your password?</h1>
+<p class="text-secondary small">Use one of your recovery codes, or have a reset link sent to your email. Your authenticator app is still needed to log in afterwards.</p>
+{% if errors %}<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% if info %}<div class="alert alert-info py-2">{{ info }}</div>{% endif %}
+
+<h2 class="h6 mt-3">1. Use a recovery code</h2>
+<form method="post" novalidate autocomplete="off">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="method" value="recovery">
+  <div class="mb-2"><label class="form-label" for="r-username">Username</label>
+    <input class="form-control" id="r-username" name="username" value="{{ form.username if method == 'recovery' else '' }}" required></div>
+  <div class="mb-2"><label class="form-label" for="r-code">Recovery code</label>
+    <input class="form-control" id="r-code" name="code" placeholder="XXXXX-XXXXX" autocomplete="off" required></div>
+  <div class="mb-2"><label class="form-label" for="r-new">New password</label>
+    <input class="form-control" id="r-new" name="new" type="password" autocomplete="new-password" required>
+    <div class="form-text">At least {{ min_len }} characters, with letters and a number.</div></div>
+  <div class="mb-3"><label class="form-label" for="r-confirm">Confirm new password</label>
+    <input class="form-control" id="r-confirm" name="confirm" type="password" autocomplete="new-password" required></div>
+  <button class="btn btn-primary w-100">Reset password</button>
+</form>
+
+<a class="d-block text-center mt-4 small" href="{{ url_for('auth.login') }}">Back to log in</a>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Alerts</h1>
+  <div class="ms-auto d-flex gap-2">
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.export_csv', **args) }}"><i class="bi bi-filetype-csv me-1"></i>CSV</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.export_pdf', **args) }}"><i class="bi bi-filetype-pdf me-1"></i>PDF</a>
+  </div>
+</div>
+<form class="card card-body mb-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">Category</label>
+      <select class="form-select form-select-sm" name="category"><option value="">All</option>
+        {% for c in all_categories %}<option {{ 'selected' if args.get('category') == c }}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">Min. severity</label>
+      <select class="form-select form-select-sm" name="severity"><option value="">Any</option>
+        <option value="2" {{ 'selected' if args.get('severity') == '2' }}>Medium+</option>
+        <option value="3" {{ 'selected' if args.get('severity') == '3' }}>High</option></select></div>
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">Engine</label>
+      <select class="form-select form-select-sm" name="source"><option value="">Both</option>
+        <option value="suricata" {{ 'selected' if args.get('source') == 'suricata' }}>Suricata</option>
+        <option value="sensor" {{ 'selected' if args.get('source') == 'sensor' }}>Sensor</option></select></div>
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">Status</label>
+      <select class="form-select form-select-sm" name="ack"><option value="">All</option>
+        <option value="open" {{ 'selected' if args.get('ack') == 'open' }}>Unacknowledged</option>
+        <option value="done" {{ 'selected' if args.get('ack') == 'done' }}>Acknowledged</option></select></div>
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">IP contains</label>
+      <input class="form-control form-control-sm" name="ip" value="{{ args.get('ip','') }}"></div>
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">Signature contains</label>
+      <input class="form-control form-control-sm" name="q" value="{{ args.get('q','') }}"></div>
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">From date</label>
+      <input class="form-control form-control-sm" type="date" name="from" value="{{ args.get('from','') }}"></div>
+    <div class="col-6 col-lg-2"><label class="form-label small mb-1">To date</label>
+      <input class="form-control form-control-sm" type="date" name="to" value="{{ args.get('to','') }}"></div>
+    <div class="col-12 col-lg-4 d-flex gap-2">
+      <button class="btn btn-sm btn-primary">Filter</button>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.alerts') }}">Reset</a>
+    </div>
+  </div>
+</form>
+
+<div class="card"><div class="table-responsive">
+  <table class="table table-hover align-middle mb-0">
+    <thead><tr><th>Time</th><th>Sev</th><th>Category</th><th>Signature</th><th>Source</th><th>Destination</th><th>Proto</th><th></th></tr></thead>
+    <tbody>
+    {% for a in pagination.items %}
+      <tr class="{{ 'text-secondary' if a.acknowledged }}">
+        <td class="text-nowrap">{{ a.ts|localtime }}</td>
+        <td><span class="badge sev-{{ a.severity_label }}">{{ a.severity_label }}</span></td>
+        <td>{{ a.category }}</td>
+        <td class="sig"><a href="{{ url_for('main.alert_detail', alert_id=a.id) }}" class="link-body-emphasis">{{ a.signature }}</a>
+          <span class="badge text-bg-secondary ms-1">{{ a.source }}</span></td>
+        <td class="text-nowrap">{{ a.src_ip or '-' }}{% if a.src_port %}:{{ a.src_port }}{% endif %}</td>
+        <td class="text-nowrap">{{ a.dest_ip or '-' }}{% if a.dest_port %}:{{ a.dest_port }}{% endif %}</td>
+        <td>{{ a.proto or '' }}</td>
+        <td class="text-end">{% if not a.acknowledged %}
+          <form method="post" action="{{ url_for('main.ack', alert_id=a.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+            <button class="btn btn-sm btn-outline-secondary" title="Acknowledge"><i class="bi bi-check2"></i></button></form>{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="8" class="text-center text-secondary py-4">No alerts match these filters.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+
+<div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+  <span class="text-secondary small">{{ pagination.total }} alert(s)</span>
+  <nav aria-label="Pages"><ul class="pagination pagination-sm mb-0">
+    {% if pagination.has_prev %}<li class="page-item"><a class="page-link" href="{{ url_for('main.alerts', page=pagination.prev_num, **args) }}">&laquo; Newer</a></li>{% endif %}
+    <li class="page-item disabled"><span class="page-link">Page {{ pagination.page }} of {{ pagination.pages or 1 }}</span></li>
+    {% if pagination.has_next %}<li class="page-item"><a class="page-link" href="{{ url_for('main.alerts', page=pagination.next_num, **args) }}">Older &raquo;</a></li>{% endif %}
+  </ul></nav>
+  {% if pagination.total %}
+  <form method="post" action="{{ url_for('main.ack_all') }}" class="ms-auto">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for k, v in args.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+    <button class="btn btn-sm btn-outline-secondary">Acknowledge all matching</button></form>
+  {% endif %}
+</div>
+{% endblock %}

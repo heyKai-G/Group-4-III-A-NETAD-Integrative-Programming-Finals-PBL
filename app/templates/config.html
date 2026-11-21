@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Setup wizard' if first_run else 'Settings' }}{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">{{ 'Welcome - tell the IDS about your network' if first_run else 'Settings' }}</h1>
+<p class="text-secondary">{{ 'Answer these once so the IDS knows what to watch.' if first_run else 'Changing these regenerates the Suricata rules file; restart Suricata afterwards.' }}</p>
+{% if errors %}<div class="alert alert-danger py-2"><ul class="mb-0 ps-3">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+<form method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-4">
+    <div class="col-xl-6">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h5">Network</h2>
+        <div class="mb-3"><label class="form-label" for="network_name">Network name</label>
+          <input class="form-control" id="network_name" name="network_name" value="{{ form.network_name }}" placeholder="e.g. NETAD Lab" required></div>
+        <div class="mb-3"><label class="form-label" for="subnet_cidr">Subnet (CIDR)</label>
+          <input class="form-control" id="subnet_cidr" name="subnet_cidr" value="{{ form.subnet_cidr }}" placeholder="192.168.1.0/24" required>
+          <div class="form-text">Run <code>ipconfig</code>: the subnet is your IPv4 address with its mask, e.g. 192.168.1.x with mask 255.255.255.0 is 192.168.1.0/24.</div></div>
+        <div class="mb-3"><label class="form-label" for="gateway_ip">Gateway (router) IP</label>
+          <input class="form-control" id="gateway_ip" name="gateway_ip" value="{{ form.gateway_ip }}" placeholder="192.168.1.1" required>
+          <div class="form-text">The old PLDT router's address (the "Default Gateway" in <code>ipconfig</code>).</div></div>
+        <div class="mb-3"><label class="form-label" for="dhcp_servers">Authorized DHCP server IPs</label>
+          <input class="form-control" id="dhcp_servers" name="dhcp_servers" value="{{ form.dhcp_servers }}" placeholder="leave empty to use the gateway">
+          <div class="form-text">Comma-separated. A DHCP offer from any other address raises a "Rogue DHCP" alert.</div></div>
+        <div>
+          <label class="form-label d-block">Detection sensitivity</label>
+          {% for val, label, hint in [('low','Low','fewer alerts, higher thresholds'),('medium','Medium','recommended'),('high','High','more alerts, lower thresholds - may show false positives')] %}
+          <div class="form-check"><input class="form-check-input" type="radio" name="sensitivity" id="sens_{{ val }}" value="{{ val }}" {{ 'checked' if form.sensitivity == val }}>
+            <label class="form-check-label" for="sens_{{ val }}"><strong>{{ label }}</strong> <span class="text-secondary small">- {{ hint }}</span></label></div>
+          {% endfor %}
+        </div>
+      </div></div>
+    </div>
+    <div class="col-xl-6">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h5">Adapter to monitor</h2>
+        <p class="small text-secondary">Pick the <strong>physical adapter that faces your lab switch</strong> (the USB-to-Ethernet adapter). All lab traffic to and from the router passes through it. Do not pick Wi-Fi.</p>
+        <div class="list-group">
+          {% for i in interfaces %}
+          <label class="list-group-item d-flex gap-3 align-items-start {{ 'opacity-50' if i.status|lower not in ('up','connected') }}">
+            <input class="form-check-input mt-1" type="radio" name="iface_name" value="{{ i.name }}" {{ 'checked' if form.iface_name == i.name }}>
+            <span class="flex-grow-1">
+              <span class="fw-semibold">{{ i.name }}</span>
+              <span class="badge text-bg-{{ 'success' if i.status|lower in ('up','connected') else 'secondary' }} ms-1">{{ i.status or 'unknown' }}</span><br>
+              <span class="small text-secondary">{{ i.description }}{% if i.speed %} - {{ i.speed }}{% endif %}</span><br>
+              <span class="small text-secondary">MAC {{ i.mac or '-' }} - IPv4 {{ i.ipv4 or 'none' }}</span>
+              {% if not i.device %}<br><span class="small text-warning">No capture device ID found (adapter disconnected?).</span>{% endif %}
+            </span>
+          </label>
+          {% else %}<div class="list-group-item text-secondary">No adapters found.</div>{% endfor %}
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="mt-4"><button class="btn btn-primary btn-lg">{{ 'Save and open dashboard' if first_run else 'Save settings' }}</button></div>
+</form>
+
+{% if cfg %}
+<div class="card mt-4"><div class="card-body">
+  <h2 class="h5">What to give Suricata</h2>
+  <p class="small text-secondary mb-2">Set this in <code>suricata.yaml</code>:</p>
+  <pre class="mb-3"><code>HOME_NET: "[{{ cfg.subnet_cidr }}]"</code></pre>
+  <p class="small text-secondary mb-2">Rules file generated for the <strong>{{ cfg.sensitivity }}</strong> sensitivity level (add it to <code>rule-files</code>):</p>
+  <pre class="mb-3"><code>{{ rules_path }}</code></pre>
+  <p class="small text-secondary mb-2">Start Suricata (PowerShell as Administrator), or just run <code>start_suricata.ps1</code>:</p>
+  <pre class="mb-0"><code>{{ suricata_cmd }}</code></pre>
+</div></div>
+<div class="card mt-4"><div class="card-body">
+  <h2 class="h5">Data retention</h2>
+  <p class="mb-0">Alerts are deleted automatically after <strong>{{ retention }} days</strong> by the sensor service.</p>
+</div></div>
+{% endif %}
+{% endblock %}
